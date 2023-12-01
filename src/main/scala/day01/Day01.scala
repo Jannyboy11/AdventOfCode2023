@@ -7,7 +7,6 @@ val lines: List[String] = input.getLines().toList
 
 type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 type DigitPair = (Digit, Digit)
-type Index = Int
 
 def getDigitPair(line: String): DigitPair =
     ((line.find(_.isDigit).get - '0').asInstanceOf[Digit], (line.findLast(_.isDigit).get - '0').asInstanceOf[Digit])
@@ -31,12 +30,12 @@ def digitValue(string: String): Digit = string match {
 val searchValues = Seq("0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
 
-def findDigit(line: String, fromIndex: Index): Option[Digit] = searchValues
+def findDigit(line: String, fromIndex: Int): Option[Digit] = searchValues
     .find(search => line.regionMatches(fromIndex, search, 0, search.length))
     .map(digitValue)
 
 def getNumberPair(line: String): DigitPair =
-    val reduce: Range => Option[Digit] = range => range.collectFirst(Function.unlift(findDigit(line, _)))
+    val reduce: Range => Option[Digit] = _.collectFirst(Function.unlift(findDigit(line, _)))
     (reduce(0 until line.length).get, reduce(line.length - 1 to 0 by -1).get)
 
 @main def main(): Unit = {
