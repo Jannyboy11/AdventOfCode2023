@@ -1,5 +1,6 @@
 package day01
 
+import scala.annotation.switch
 import scala.io.Source
 
 val input = Source.fromResource("day01.in")
@@ -14,7 +15,7 @@ def getDigitPair(line: String): DigitPair =
 def numericValue(digitPair: DigitPair): Int = digitPair match
     case (one, two) => 10 * one + two
 
-def digitValue(string: String): Digit = string match {
+def digitValue(string: String): Digit = (string: @switch) match {
     case "0" | "zero"   => 0
     case "1" | "one"    => 1
     case "2" | "two"    => 2
