@@ -5,15 +5,17 @@ import scala.io.Source
 val input = Source.fromResource("day01.in")
 val lines: List[String] = input.getLines().toList
 
-type DigitPair = (Int, Int)
+type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+type DigitPair = (Digit, Digit)
+type Index = Int
 
 def getDigitPair(line: String): DigitPair =
-    (line.find(_.isDigit).get - '0', line.findLast(_.isDigit).get - '0')
+    ((line.find(_.isDigit).get - '0').asInstanceOf[Digit], (line.findLast(_.isDigit).get - '0').asInstanceOf[Digit])
 
 def numericValue(digitPair: DigitPair): Int = digitPair match
     case (one, two) => 10 * one + two
 
-def digitValue(string: String): Int = string match {
+def digitValue(string: String): Digit = string match {
     case "0" | "zero"   => 0
     case "1" | "one"    => 1
     case "2" | "two"    => 2
@@ -29,13 +31,13 @@ def digitValue(string: String): Int = string match {
 val searchValues = Seq("0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
 
-def findDigit(line: String, fromIndex: Int): Option[Int] = searchValues
+def findDigit(line: String, fromIndex: Index): Option[Digit] = searchValues
     .find(search => line.regionMatches(fromIndex, search, 0, search.length))
     .map(digitValue)
 
 def getNumberPair(line: String): DigitPair =
-    val pf: PartialFunction[Int, Int] = Function.unlift(findDigit(line, _))
-    ((0 until line.length).collectFirst(pf).get, (line.length - 1 to 0 by -1).collectFirst(pf).get)
+    val reduce: Range => Option[Digit] = range => range.collectFirst(Function.unlift(findDigit(line, _)))
+    (reduce(0 until line.length).get, reduce(line.length - 1 to 0 by -1).get)
 
 @main def main(): Unit = {
 
