@@ -33,24 +33,9 @@ def findDigit(line: String, fromIndex: Int): Option[Int] = searchValues
     .find(search => line.regionMatches(fromIndex, search, 0, search.length))
     .map(digitValue)
 
-def findFirstDigit(line: String): Int = {
-    var index = 0
-    while index < line.length do findDigit(line, index) match
-        case Some(value) => return value
-        case _ => index += 1
-    throw RuntimeException(s"Could not find number in line: $line.")
-}
-
-def findLastDigit(line: String): Int = {
-    var index = line.length - 1
-    while index >= 0 do findDigit(line, index) match
-        case Some(value) => return value
-        case _ => index -= 1
-    throw RuntimeException(s"Could not find number in line: $line.")
-}
-
 def getNumberPair(line: String): DigitPair =
-    (findFirstDigit(line), findLastDigit(line))
+    val pf: PartialFunction[Int, Int] = Function.unlift(findDigit(line, _))
+    ((0 until line.length).collectFirst(pf).get, (line.length - 1 to 0 by -1).collectFirst(pf).get)
 
 @main def main(): Unit = {
 
