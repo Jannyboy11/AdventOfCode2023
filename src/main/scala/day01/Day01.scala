@@ -29,14 +29,9 @@ def digitValue(string: String): Int = string match {
 val searchValues = Seq("0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
 
-def findDigit(line: String, fromIndex: Int): Option[Int] = {
-    val iterator = searchValues.iterator
-    while iterator.hasNext do
-        val search = iterator.next()
-        if line.regionMatches(fromIndex, search, 0, search.length) then
-            return Some(digitValue(search))
-    None
-}
+def findDigit(line: String, fromIndex: Int): Option[Int] = searchValues
+    .find(search => line.regionMatches(fromIndex, search, 0, search.length))
+    .map(digitValue)
 
 def findFirstDigit(line: String): Int = {
     var index = 0
