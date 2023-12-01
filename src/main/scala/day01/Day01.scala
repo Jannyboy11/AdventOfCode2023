@@ -35,7 +35,7 @@ def findDigit(line: String, fromIndex: Int): Option[Digit] = searchValues
     .map(digitValue)
 
 def getNumberPair(line: String): DigitPair =
-    val reduce: Range => Option[Digit] = _.collectFirst(Function.unlift(findDigit(line, _)))
+    def reduce(range: Range): Option[Digit] = range.collectFirst(Function.unlift(findDigit(line, _)))
     (reduce(0 until line.length).get, reduce(line.length - 1 to 0 by -1).get)
 
 @main def main(): Unit = {
