@@ -52,7 +52,7 @@ def getNumberSlice(digitCoordinates: Coordinates)(using matrix: Matrix): NumberS
 def numberValue(numberChars: NumberSlice)(using matrix: Matrix): Int = numberChars match
     case NumberSlice(y, lower, upper) => matrix(y).slice(lower, upper+1).mkString.toInt
 
-def gearRatio(numbers: Iterable[NumberSlice])(using matrix: Matrix): Int = numbers.map(numberValue).product
+def gearRatio(numbers: Iterable[NumberSlice])(using Matrix): Int = numbers.map(numberValue).product
 
 @main def main(): Unit = {
 
