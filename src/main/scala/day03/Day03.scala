@@ -12,7 +12,7 @@ case class NumberSlice(y: Int, xLower: Int, xUpper: Int)
 
 def isSymbol(char: Char): Boolean = !(char.isDigit || char == '.')
 
-def surrounding(matrix: Matrix, x: Int, y: Int): Set[Coordinates] = {
+def surrounding(x: Int, y: Int)(using matrix: Matrix): Set[Coordinates] = {
     val height = matrix.length
     val width = matrix(0).length
     def inRange(i: Int, upperEx: Int): Boolean = 0 <= i && i < upperEx
@@ -23,50 +23,51 @@ def surrounding(matrix: Matrix, x: Int, y: Int): Set[Coordinates] = {
     ).filter { case Coordinates(cx, cy) => inRange(cx, width) && inRange(cy, height) }
 }
 
-def findNumberSlices(matrix: Matrix, mapper: (Matrix, Int, Int) => Set[NumberSlice]): Map[Coordinates, Set[NumberSlice]] = {
+def findNumberSlices(mapper: Matrix ?=> (Int, Int) => Set[NumberSlice])(using matrix: Matrix): Map[Coordinates, Set[NumberSlice]] = {
     val entries: Seq[(Coordinates, Set[NumberSlice])] = for {
         y <- matrix.indices
         x <- matrix(0).indices
-        slices = mapper(matrix, x, y)
+        slices = mapper(x, y)
         if slices.nonEmpty
     } yield (Coordinates(x, y), slices)
     entries.toMap
 }
 
-def symbolNumbers(matrix: Matrix, x: Int, y: Int): Set[NumberSlice] =
-    if isSymbol(matrix(y)(x)) then getNumberSlices(matrix, x, y) else Set()
+def symbolNumbers(x: Int, y: Int)(using matrix: Matrix): Set[NumberSlice] =
+    if isSymbol(matrix(y)(x)) then getNumberSlices(x, y) else Set()
 
-def gearNumbers(matrix: Matrix, x: Int, y: Int): Set[NumberSlice] =
+def gearNumbers(x: Int, y: Int)(using matrix: Matrix): Set[NumberSlice] =
     if matrix(y)(x) == '*' then
-        val gearNumbers = getNumberSlices(matrix, x, y)
+        val gearNumbers = getNumberSlices(x, y)
         if gearNumbers.size == 2 then return gearNumbers
     Set()
 
-def getNumberSlices(matrix: Matrix, x: Int, y: Int): Set[NumberSlice] = surrounding(matrix, x, y)
+def getNumberSlices(x: Int, y: Int)(using matrix: Matrix): Set[NumberSlice] = surrounding(x, y)
     .filter { case Coordinates(cx, cy) => matrix(cy)(cx).isDigit }
-    .map(getNumberSlice(matrix, _))
+    .map(getNumberSlice)
 
-def getNumberSlice(matrix: Matrix, digitCoordinates: Coordinates): NumberSlice =
+def getNumberSlice(digitCoordinates: Coordinates)(using matrix: Matrix): NumberSlice =
     val row = matrix(digitCoordinates.y)
     val lower = { var x = digitCoordinates.x; while x > 0 && row(x-1).isDigit do x -= 1; x }
     val upper = { var x = digitCoordinates.x; while x < row.length-1 && row(x+1).isDigit do x += 1; x }
     NumberSlice(digitCoordinates.y, lower, upper)
 
-def numberValue(matrix: Matrix, numberChars: NumberSlice): Int = numberChars match
+def numberValue(numberChars: NumberSlice)(using matrix: Matrix): Int = numberChars match
     case NumberSlice(y, lower, upper) => matrix(y).slice(lower, upper+1).mkString.toInt
 
-def gearRatio(matrix: Matrix, numbers: Seq[NumberSlice]): Int = numbers.map(numberValue(matrix, _)).product
+def gearRatio(numbers: Seq[NumberSlice])(using matrix: Matrix): Int = numbers.map(numberValue).product
 
 @main def main(): Unit = {
 
-    val result1 = findNumberSlices(input, symbolNumbers)
+    given Matrix = input
+    val result1 = findNumberSlices(symbolNumbers)
         .flatMap { case (_, numbers) => numbers }.toSeq.distinct
-        .map(numberValue(input, _))
+        .map(numberValue)
         .sum
     println(result1)
 
-    val result2 = findNumberSlices(input, gearNumbers).values
-        .map(numberSlices => gearRatio(input, numberSlices.toSeq))
+    val result2 = findNumberSlices(gearNumbers).values
+        .map(numberSlices => gearRatio(numberSlices.toSeq))
         .sum
     println(result2)
 
