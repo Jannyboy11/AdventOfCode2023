@@ -1,15 +1,13 @@
 package day03
 
-import scala.annotation.switch
 import scala.io.Source
 
 val source = Source.fromResource("day03.in")
 val input: Matrix = source.getLines().map(_.toIndexedSeq).toIndexedSeq
+
 type Matrix = IndexedSeq[IndexedSeq[Char]]
 case class Coordinates(x: Int, y: Int)
 case class NumberSlice(y: Int, xLower: Int, xUpper: Int)
-
-def isSymbol(char: Char): Boolean = !(char.isDigit || char == '.')
 
 def surrounding(x: Int, y: Int)(using matrix: Matrix): Set[Coordinates] = {
     val height = matrix.length
@@ -33,7 +31,8 @@ def findNumberSlices(mapper: Matrix ?=> (Int, Int) => Set[NumberSlice])(using ma
 }
 
 def symbolNumbers(x: Int, y: Int)(using matrix: Matrix): Set[NumberSlice] =
-    if isSymbol(matrix(y)(x)) then getNumberSlices(x, y) else Set()
+    val char = matrix(y)(x)
+    if !(char.isDigit || char == '.') then getNumberSlices(x, y) else Set()
 
 def gearNumbers(x: Int, y: Int)(using matrix: Matrix): Set[NumberSlice] =
     if matrix(y)(x) == '*' then
@@ -60,7 +59,7 @@ def gearRatio(numbers: Seq[NumberSlice])(using matrix: Matrix): Int = numbers.ma
 @main def main(): Unit = {
 
     given Matrix = input
-    val result1 = findNumberSlices(symbolNumbers).flatMap { case (_, numbers) => numbers }.toSeq.distinct
+    val result1 = findNumberSlices(symbolNumbers).flatMap((_, numbers) => numbers).toSeq.distinct
         .map(numberValue)
         .sum
     println(result1)
