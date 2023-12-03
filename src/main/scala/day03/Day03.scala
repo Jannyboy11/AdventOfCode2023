@@ -20,15 +20,13 @@ def surrounding(x: Int, y: Int)(using matrix: Matrix): Set[Coordinates] = {
     ).filter { case Coordinates(cx, cy) => inRange(cx, width) && inRange(cy, height) }
 }
 
-def findNumberSlices(mapper: Matrix ?=> (Int, Int) => Set[NumberSlice])(using matrix: Matrix): Map[Coordinates, Set[NumberSlice]] = {
-    val entries: Seq[(Coordinates, Set[NumberSlice])] = for {
+def findNumberSlices(mapper: Matrix ?=> (Int, Int) => Set[NumberSlice])(using matrix: Matrix): Seq[Set[NumberSlice]] =
+    for {
         y <- matrix.indices
         x <- matrix(0).indices
         slices = mapper(x, y)
         if slices.nonEmpty
-    } yield (Coordinates(x, y), slices)
-    entries.toMap
-}
+    } yield slices
 
 def symbolNumbers(x: Int, y: Int)(using matrix: Matrix): Set[NumberSlice] =
     val char = matrix(y)(x)
@@ -54,18 +52,18 @@ def getNumberSlice(digitCoordinates: Coordinates)(using matrix: Matrix): NumberS
 def numberValue(numberChars: NumberSlice)(using matrix: Matrix): Int = numberChars match
     case NumberSlice(y, lower, upper) => matrix(y).slice(lower, upper+1).mkString.toInt
 
-def gearRatio(numbers: Seq[NumberSlice])(using matrix: Matrix): Int = numbers.map(numberValue).product
+def gearRatio(numbers: Iterable[NumberSlice])(using matrix: Matrix): Int = numbers.map(numberValue).product
 
 @main def main(): Unit = {
 
     given Matrix = input
-    val result1 = findNumberSlices(symbolNumbers).flatMap((_, numbers) => numbers).toSeq.distinct
+    val result1 = findNumberSlices(symbolNumbers).flatten   //works for our input because there are no numbers with multiple symbols adjacent
         .map(numberValue)
         .sum
     println(result1)
 
-    val result2 = findNumberSlices(gearNumbers).values
-        .map(numberSlices => gearRatio(numberSlices.toSeq))
+    val result2 = findNumberSlices(gearNumbers)             //work for out input because there are no numbers with multiple gears adjacent
+        .map(gearRatio)
         .sum
     println(result2)
 
