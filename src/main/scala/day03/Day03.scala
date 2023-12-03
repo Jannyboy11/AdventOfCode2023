@@ -1,6 +1,5 @@
 package day03
 
-import java.util.concurrent.locks.Condition
 import scala.annotation.switch
 import scala.io.Source
 
@@ -42,9 +41,10 @@ def gearNumbers(x: Int, y: Int)(using matrix: Matrix): Set[NumberSlice] =
         if gearNumbers.size == 2 then return gearNumbers
     Set()
 
-def getNumberSlices(x: Int, y: Int)(using matrix: Matrix): Set[NumberSlice] = surrounding(x, y)
-    .filter { case Coordinates(cx, cy) => matrix(cy)(cx).isDigit }
-    .map(getNumberSlice)
+def getNumberSlices(x: Int, y: Int)(using matrix: Matrix): Set[NumberSlice] =
+    surrounding(x, y)
+        .filter { case Coordinates(cx, cy) => matrix(cy)(cx).isDigit }
+        .map(getNumberSlice)
 
 def getNumberSlice(digitCoordinates: Coordinates)(using matrix: Matrix): NumberSlice =
     val row = matrix(digitCoordinates.y)
@@ -60,8 +60,7 @@ def gearRatio(numbers: Seq[NumberSlice])(using matrix: Matrix): Int = numbers.ma
 @main def main(): Unit = {
 
     given Matrix = input
-    val result1 = findNumberSlices(symbolNumbers)
-        .flatMap { case (_, numbers) => numbers }.toSeq.distinct
+    val result1 = findNumberSlices(symbolNumbers).flatMap { case (_, numbers) => numbers }.toSeq.distinct
         .map(numberValue)
         .sum
     println(result1)
