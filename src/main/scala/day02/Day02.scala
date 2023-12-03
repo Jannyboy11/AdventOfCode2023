@@ -5,9 +5,9 @@ import scala.io.Source
 val source = Source.fromResource("day02.in")
 val input: List[Game] = source.getLines().map { case s"Game ${id}: ${reveal}" =>
     val revealsStrings: Array[String] = reveal.split("; ")
-    val reveals: Seq[Reveal] = revealsStrings.map(_.split(", ").map { case s"${count} ${colour}" => Cubes(count.toInt, colour) }.toSet) .toSeq
+    val reveals: Seq[Reveal] = revealsStrings.map(_.split(", ").map { case s"${count} ${colour}" => Cubes(count.toInt, colour) } .toSet).toSeq
     Game(id.toInt, reveals)
-}.toList
+} .toList
 
 case class Game(id: Int, reveals: Seq[Reveal])
 type Reveal = Set[Cubes]
