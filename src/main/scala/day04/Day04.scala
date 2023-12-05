@@ -18,11 +18,11 @@ type CardCounts = Map[ID, Count]
 
 def points(card: Card): Int = points(overlapping(card))
 
-def overlapping(card: Card): Int = card match
-    case Card(_, winning, have) => winning.intersect(have).size
-
 def points(overlapping: Int): Int =
     LazyList.iterate(1)(_ * 2).take(overlapping).lastOption.getOrElse(0)
+
+def overlapping(card: Card): Int = card match
+    case Card(_, winning, have) => winning.intersect(have).size
 
 def count(scratchpad: Scratchpad): CardCounts = scratchpad.map(card => (card.id, 1)).toMap
 
