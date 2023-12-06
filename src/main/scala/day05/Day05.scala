@@ -1,6 +1,5 @@
 package day05
 
-import scala.collection.mutable
 import scala.io.Source
 
 val source = Source.fromResource("day05.in")
