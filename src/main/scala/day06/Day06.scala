@@ -1,14 +1,12 @@
 package day06
 
-import scala.collection.immutable.NumericRange
+val times =     Seq(44, 70, 70, 80)
+val distances = Seq(283, 1134, 1134, 1491)
 
-val times =     Seq[Long](44, 70, 70, 80)
-val distances = Seq[Long](283, 1134, 1134, 1491)
+def ways(raceTime: Int, distanceToBeat: Int): Int =
+    Range.inclusive(0, raceTime).count(buttonTime => distance(buttonTime, raceTime) > distanceToBeat)
 
-def ways(raceTime: Long, distanceToBeat: Long): Long =
-    NumericRange.inclusive(0L, raceTime, 1L).count(buttonTime => distance(buttonTime, raceTime) > distanceToBeat)
-
-def distance(buttonTime: Long, totalTime: Long): Long =
+def distance(buttonTime: Int, totalTime: Int): Int =
     val travelTime = totalTime - buttonTime
     buttonTime/*speed*/ * travelTime
 
