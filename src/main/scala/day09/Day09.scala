@@ -3,21 +3,21 @@ package day09
 import scala.io.Source
 
 val source = Source.fromResource("day09.in")
-val input: Seq[Sequence] = source.getLines().map(line => line.split(" ").map(_.toLong).toSeq).toSeq
+val input: Seq[Sequence] = source.getLines().map(line => line.split(" ").map(_.toInt).toSeq).toSeq
 
-type Sequence = Seq[Long]
+type Sequence = Seq[Int]
 
 def differences(sequence: Sequence): Sequence =
-    sequence.zip(sequence.tail).map { case (a, b) => b - a }
+    sequence.lazyZip(sequence.tail).map { case (a, b) => b - a }
 
 def allZeroes(sequence: Sequence): Boolean = sequence.forall(_ == 0)
 
-def predictNext(sequence: Sequence): Long =
-    if allZeroes(sequence) then 0L
+def predictNext(sequence: Sequence): Int =
+    if allZeroes(sequence) then 0
     else sequence.last + predictNext(differences(sequence))
 
-def predictPrevious(sequence: Sequence): Long =
-    if allZeroes(sequence) then 0L
+def predictPrevious(sequence: Sequence): Int =
+    if allZeroes(sequence) then 0
     else sequence.head - predictPrevious(differences(sequence))
 
 @main def main(): Unit = {
