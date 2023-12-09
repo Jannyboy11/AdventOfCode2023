@@ -82,14 +82,12 @@ def winConditionP1(sortedHand: Hand): WinCondition = {
 }
 
 def winConditionP2(sortedHand: Hand): WinCondition =
+    if allEqual(Rank.Jack, sortedHand) then return WinCondition.FiveOfAKind
     val highestMostOccurringRank: Rank = highestMostOccurring(sortedHand.filter(_ != Rank.Jack))
     val p1Hand = sortedHand.map(rank => if rank == Rank.Jack then highestMostOccurringRank else rank)
     winConditionP1(sortHand(p1Hand)(using individualOrderingP2))
 
 def highestMostOccurring(handWithoutJokers: Hand): Rank = {
-    if handWithoutJokers.isEmpty then
-        return Rank.Jack
-
     val counts = scala.collection.mutable.Map[Rank, Int]()
     for rank <- handWithoutJokers do
         counts.updateWith(rank) { case Some(count) => Some(count + 1); case None => Some(1) }
