@@ -30,20 +30,8 @@ object Rank:
         case 'K' => King
         case 'A' => Ace
 
-enum Rank(val char: Char):
-    case Two extends Rank('2')
-    case Three extends Rank('3')
-    case Four extends Rank('4')
-    case Five extends Rank('5')
-    case Six extends Rank('6')
-    case Seven extends Rank('7')
-    case Eight extends Rank('8')
-    case Nine extends Rank('9')
-    case Ten extends Rank('T')
-    case Jack extends Rank('J')
-    case Queen extends Rank('Q')
-    case King extends Rank('K')
-    case Ace extends Rank('A')
+enum Rank:
+    case Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace
 
 enum WinCondition extends java.lang.Enum[WinCondition]:
     //extend java.lang.Enum, so that this class implements Comparable
@@ -74,9 +62,9 @@ object FourOfAKind:
 object FiveOfAKind:
     def is(sortedHand: Hand): Boolean = allEqual(sortedHand.head, sortedHand)
 
-def sortHand(hand: Hand): Hand = hand.sortBy(_.ordinal)(summon[Ordering[Int]].reverse)
+def sortHand(hand: Hand)(using Ordering[Rank]): Hand = hand.sorted
 
-def winCondition(sortedHand: Hand): WinCondition = {
+def winConditionP1(sortedHand: Hand): WinCondition = {
     if FiveOfAKind.is(sortedHand) then
         WinCondition.FiveOfAKind
     else if FourOfAKind.is(sortedHand) then
@@ -93,24 +81,55 @@ def winCondition(sortedHand: Hand): WinCondition = {
         WinCondition.HighCard
 }
 
-//TODO do not sort more than once.
-val handOrdering: Ordering[Hand] = Ordering.by[Hand, WinCondition](hand => winCondition(sortHand(hand)))
-    .orElseBy(hand => hand.map(rank => rank.ordinal))(using Ordering.Implicits.seqOrdering)
+def winConditionP2(sortedHand: Hand): WinCondition =
+    val highestMostOccurringRank: Rank = highestMostOccurring(sortedHand.filter(_ != Rank.Jack))
+    val p1Hand = sortedHand.map(rank => if rank == Rank.Jack then highestMostOccurringRank else rank)
+    winConditionP1(sortHand(p1Hand)(using individualOrderingP2))
 
-def makeRankings(cards: Seq[Hand]): Map[Hand, Int] =
-    cards.sorted(using handOrdering).zip(LazyList.iterate(1)(_ + 1)).toMap
+def highestMostOccurring(handWithoutJokers: Hand): Rank = {
+    if handWithoutJokers.isEmpty then
+        return Rank.Jack
+
+    val counts = scala.collection.mutable.Map[Rank, Int]()
+    for rank <- handWithoutJokers do
+        counts.updateWith(rank) { case Some(count) => Some(count + 1); case None => Some(1) }
+    val pairOrdering: Ordering[(Rank, Int)] = Ordering.by[(Rank, Int), Int] { case (_, count) => count }
+        .orElse(Ordering.by[(Rank, Int), Rank] { case (rank, _) => rank }(using individualOrderingP2))
+    val (mostOccurringRank, _) = counts.max(using pairOrdering)
+    mostOccurringRank
+}
+
+def sortedHands(hands: Seq[Hand]): Map[Hand, Hand] =
+    hands.map(hand => (hand, sortHand(hand)(using individualOrderingP1))).toMap
+
+def handOrdering(using individualOrdering: Ordering[Rank], winCondition: Hand => WinCondition): Ordering[Hand] =
+    Ordering.by[Hand, WinCondition](hand => winCondition(sortHand(hand)))
+        .orElse(Ordering.Implicits.seqOrdering(using individualOrdering))
+
+def makeRankings(cards: Seq[Hand])(using handOrdering: Ordering[Hand]): Map[Hand, Int] =
+    cards.sorted.zip(LazyList.iterate(1)(_ + 1)).toMap
+
+val individualOrderingP1: Ordering[Rank] = Ordering.by(_.ordinal)
+
+val individualOrderingP2: Ordering[Rank] = Ordering.fromLessThan { (one, two) =>
+    if one == Rank.Jack then two != Rank.Jack else if two == Rank.Jack then false else one.ordinal < two.ordinal
+}
+
+val handOrderingP1: Ordering[Hand] = handOrdering(using individualOrderingP1, winConditionP1)
+
+val handOrderingP2: Ordering[Hand] = handOrdering(using individualOrderingP2, winConditionP2)
+
+def solve(input: Seq[(Hand, Bid)])(using Ordering[Hand]): Long =
+    val hands = input.map((hand, bid) => hand)
+    val rankings = makeRankings(hands)
+    input.map((hand, bid) => (rankings(hand) * bid).toLong).sum
 
 @main def main(): Unit = {
 
-    val result1 = {
-        val hands = input.map((hand, bid) => hand)
-        val rankings = makeRankings(hands)
-        val strengths = input.map((hand, bid) => (rankings(hand) * bid).toLong)
-        strengths.sum
-    }
+    val result1 = solve(input)(using handOrderingP1)
     println(result1)
 
-    val result2 = ???
+    val result2 = solve(input)(using handOrderingP2)
     println(result2)
 
 }
