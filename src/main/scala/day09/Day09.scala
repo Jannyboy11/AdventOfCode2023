@@ -3,29 +3,33 @@ package day09
 import scala.io.Source
 
 val source = Source.fromResource("day09.in")
-val input: Seq[Sequence] = source.getLines().map(line => line.split(" ").map(_.toInt).toSeq).toSeq
+val input: Seq[Seq[Int]] = source.getLines().map(line => line.split(" ").map(_.toInt).toSeq).toSeq
 
-type Sequence = Seq[Int]
+def lagrangeInterpolate(data: Seq[Int])(xi: Int): BigDecimal = {
+    val n = data.length
+    var result: BigDecimal = 0D
 
-def differences(sequence: Sequence): Sequence =
-    sequence.lazyZip(sequence.tail).map { case (a, b) => b - a }
+    for i <- 0 until n do
+        var term = BigDecimal(data(i))
+        for j <- 0 until n do
+            if j != i then
+                term = term * BigDecimal(xi - j) / BigDecimal(i - j)
+        result += term
 
-def allZeroes(sequence: Sequence): Boolean = sequence.forall(_ == 0)
+    result
+}
 
-def predictNext(sequence: Sequence): Int =
-    if allZeroes(sequence) then 0
-    else sequence.last + predictNext(differences(sequence))
+@main def lagrangeMain(): Unit = {
 
-def predictPrevious(sequence: Sequence): Int =
-    if allZeroes(sequence) then 0
-    else sequence.head - predictPrevious(differences(sequence))
+    val polynomials: Seq[Int => BigDecimal] = input.map(lagrangeInterpolate)
 
-@main def main(): Unit = {
-
-    val result1 = input.map(predictNext).sum
+    val result1 = {
+        val lengths: Seq[Int] = input.map(_.length)
+        polynomials.lazyZip(lengths).map((f, length) => f(length)).sum.toInt
+    }
     println(result1)
 
-    val result2 = input.map(predictPrevious).sum
+    val result2 = polynomials.map(f => f(-1)).sum.toInt
     println(result2)
 
 }

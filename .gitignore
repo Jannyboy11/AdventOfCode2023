@@ -13,3 +13,12 @@ project/project/target
 *.iml
 .idea
 .bsp
+
+#VS Code,
+.vscode
+
+#Metals
+.bloop
+project/.bloop
+project/metals.sbt
+project/project
